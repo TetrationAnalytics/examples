@@ -1,0 +1,41 @@
+{
+  "configs": [
+    {
+      "name": "name1",
+      "vip": "1.1.1.1",
+      "vip_port": 80,
+      "backends": [
+        {
+          "backend_ip": "1.1.1.10",
+          "backend_port": 89
+        },
+        {
+          "backend_ip": "1.1.1.11",
+          "backend_port": 89
+        }
+      ]
+    },
+    {
+      "name": "name2",
+      "vip": "2.2.2.2",
+      "vip_port": 80,
+      "backends": [
+        {
+          "backend_ip": "2.2.2.20",
+          "backend_port": 80
+        },
+        {
+          "backend_ip": "2.2.2.21",
+          "backend_port": 80
+        },
+        {
+          "backend_ip": "2.2.2.22",
+          "backend_port": 80
+        }
+      ],
+      "nat_subnet": "2.2.2.0/24",
+      "vrf": 1000,
+      "backend_vrf": 1001
+    }
+  ]
+}

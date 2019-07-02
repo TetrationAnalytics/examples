@@ -1,0 +1,60 @@
+access-list everyone line 8 extended permit ip any any
+access-list everyone line 16 extended permit icmp any any
+
+rserver host lnx1
+  ip address 192.168.1.11
+  inservice
+rserver host lnx2
+  ip address 192.168.1.12
+  inservice
+rserver host lnx3
+  ip address 192.168.1.13
+  inservice
+rserver host lnx4
+  ip address 192.168.1.14
+  inservice
+rserver host lnx5
+  ip address 192.168.1.15
+  inservice
+
+serverfarm host web
+  rserver lnx1 81
+    inservice
+  rserver lnx2 80
+  rserver lnx3 80
+    inservice
+  rserver lnx4 80
+    inservice
+  rserver lnx5 80
+    inservice
+
+class-map match-all slb-vip
+  2 match virtual-address 172.16.1.100 tcp eq 100
+
+policy-map type management first-match remote-access
+  class class-default
+    permit
+
+policy-map type loadbalance http first-match slb
+  class class-default
+    serverfarm web
+
+policy-map multi-match client-vips
+  class slb-vip
+    loadbalance vip inservice
+    loadbalance policy slb
+
+interface vlan 20
+  description "Client Side"
+  ip address 172.16.1.5 255.255.255.0
+  access-group input everyone
+  service-policy input client-vips
+  no shutdown
+
+interface vlan 40
+  description "Default gateway of real servers"
+  ip address 192.168.1.1 255.255.255.0
+  service-policy input remote-access
+  no shutdown
+
+ip route 0.0.0.0 0.0.0.0 172.16.1.1

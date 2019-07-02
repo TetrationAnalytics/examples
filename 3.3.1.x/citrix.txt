@@ -1,0 +1,275 @@
+> show run
+
+#NS10.1 Build 132.8
+
+# Last modified Mon Jan 11 18:30:11 2016
+
+set ns config -IPAddress 172.31.212.17 -netmask 255.255.248.0
+
+enable ns feature LB
+
+enable ns mode USNIP
+
+set system user nsroot 1442f1f480be8c67c99274ab33242bb020a4f59ed4ce8e48a -encrypted
+
+set rsskeytype -rsstype ASYMMETRIC
+
+set lacp -sysPriority 32768 -mac 00:50:56:b3:2f:c9
+
+set interface 0/1 -throughput 0 -bandwidthHigh 0 -bandwidthNormal 0 -intftype "XEN Interface" -ifnum 0/1
+
+set interface 1/1 -throughput 0 -bandwidthHigh 0 -bandwidthNormal 0 -intftype "XEN Interface" -ifnum 1/1
+
+set interface LO/1 -haMonitor OFF -throughput 0 -bandwidthHigh 0 -bandwidthNormal 0 -intftype Loopback -ifnum LO/1
+
+add vlan 240 -ipv6DynamicRouting ENABLED
+
+add ns ip6 fe80::250:56ff:feb3:2fc9/64 -scope link-local -type NSIP -vlan 1 -vServer DISABLED -mgmtAccess ENABLED -dynamicRouting ENABLED
+
+add ns ip 4.4.4.1 255.255.255.0 -vServer DISABLED -dynamicRouting ENABLED
+
+add ns ip 4.4.4.201 255.255.255.255 -type VIP -hostRoute ENABLED
+
+set ipsec parameter -lifetime 28800
+
+bind vlan 240 -ifnum 1/1
+
+bind vlan 240 -IPAddress 4.4.4.1 255.255.255.0
+
+set nd6RAvariables -vlan 1
+
+set ipv6 -natprefix ::
+
+set snmp alarm SYNFLOOD -timeout 1
+
+set snmp alarm HA-VERSION-MISMATCH -time 86400 -timeout 86400
+
+set snmp alarm HA-SYNC-FAILURE -time 86400 -timeout 86400
+
+set snmp alarm HA-NO-HEARTBEATS -time 86400 -timeout 86400
+
+set snmp alarm HA-BAD-SECONDARY-STATE -time 86400 -timeout 86400
+
+set snmp alarm HA-PROP-FAILURE -timeout 86400
+
+set snmp alarm IP-CONFLICT -timeout 86400
+
+set snmp alarm APPFW-START-URL -timeout 1
+
+set snmp alarm APPFW-DENY-URL -timeout 1
+
+set snmp alarm APPFW-REFERER-HEADER -timeout 1
+
+set snmp alarm APPFW-CSRF-TAG -timeout 1
+
+set snmp alarm APPFW-COOKIE -timeout 1
+
+set snmp alarm APPFW-FIELD-CONSISTENCY -timeout 1
+
+set snmp alarm APPFW-BUFFER-OVERFLOW -timeout 1
+
+set snmp alarm APPFW-FIELD-FORMAT -timeout 1
+
+set snmp alarm APPFW-SAFE-COMMERCE -timeout 1
+
+set snmp alarm APPFW-SAFE-OBJECT -timeout 1
+
+set snmp alarm APPFW-POLICY-HIT -timeout 1
+
+set snmp alarm APPFW-VIOLATIONS-TYPE -timeout 1
+
+set snmp alarm APPFW-XSS -timeout 1
+
+set snmp alarm APPFW-XML-XSS -timeout 1
+
+set snmp alarm APPFW-SQL -timeout 1
+
+set snmp alarm APPFW-XML-SQL -timeout 1
+
+set snmp alarm APPFW-XML-ATTACHMENT -timeout 1
+
+set snmp alarm APPFW-XML-DOS -timeout 1
+
+set snmp alarm APPFW-XML-VALIDATION -timeout 1
+
+set snmp alarm APPFW-XML-WSI -timeout 1
+
+set snmp alarm APPFW-XML-SCHEMA-COMPILE -timeout 1
+
+set snmp alarm APPFW-XML-SOAP-FAULT -timeout 1
+
+set snmp alarm DNSKEY-EXPIRY -timeout 1
+
+set snmp alarm HA-LICENSE-MISMATCH -timeout 86400
+
+set snmp alarm CLUSTER-NODE-HEALTH -time 86400 -timeout 86400
+
+set snmp alarm CLUSTER-NODE-QUORUM -time 86400 -timeout 86400
+
+set snmp alarm CLUSTER-VERSION-MISMATCH -time 86400 -timeout 86400
+
+set ns tcpProfile nstcp_default_tcp_lfp -mss 0
+
+set ns tcpProfile nstcp_default_tcp_lnp -mss 0
+
+set ns tcpProfile nstcp_default_tcp_lan -mss 0
+
+set ns tcpProfile nstcp_default_tcp_lfp_thin_stream -mss 0
+
+set ns tcpProfile nstcp_default_tcp_lnp_thin_stream -mss 0
+
+set ns tcpProfile nstcp_default_tcp_lan_thin_stream -mss 0
+
+set ns tcpProfile nstcp_default_tcp_interactive_stream -mss 0
+
+set ns tcpProfile nstcp_internal_apps -mss 0
+
+set ns tcpProfile nstcp_default_XA_XD_profile -mss 0
+
+set ns tcpProfile nstcp_default_Mobile_profile -mss 0
+
+add server 4.4.4.101 4.4.4.101
+
+add serviceGroup svc1 HTTP -maxClient 0 -maxReq 0 -cip DISABLED -usip NO -useproxyport YES -cltTimeout 180 -svrTimeout 360 -CKA NO -TCPB NO -CMP NO
+
+add ssl certKey ns-server-certificate -cert ns-server.cert -key ns-server.key
+
+set lb parameter -sessionsThreshold 150000
+
+add lb vserver vip1 HTTP 4.4.4.201 80 -persistenceType SOURCEIP -cltTimeout 180
+
+set cache parameter -via "NS-CACHE-10.0:  17"
+
+set aaa parameter -maxAAAUsers 5
+
+set ns rpcNode 172.31.212.17 -password 8a7b474124957776a0cd31b862cbe4d72b5cbd59868a136d4bdeb56cf03b28 -encrypted -srcIP 172.31.212.17
+
+ bind cmp global ns_adv_nocmp_xml_ie -priority 8700 -gotoPriorityExpression END -type RES_DEFAULT
+
+bind cmp global ns_adv_nocmp_mozilla_47 -priority 8800 -gotoPriorityExpression END -type RES_DEFAULT
+
+bind cmp global ns_adv_cmp_mscss -priority 8900 -gotoPriorityExpression END -type RES_DEFAULT
+
+bind cmp global ns_adv_cmp_msapp -priority 9000 -gotoPriorityExpression END -type RES_DEFAULT
+
+bind cmp global ns_adv_cmp_content_type -priority 10000 -gotoPriorityExpression END -type RES_DEFAULT
+
+set responder param -undefAction NOOP
+
+add cache contentGroup DEFAULT
+
+add cache contentGroup BASEFILE -relExpiry 86000 -weakNegRelExpiry 600 -maxResSize 256 -memLimit 2
+
+add cache contentGroup DELTAJS -relExpiry 86000 -weakNegRelExpiry 600 -insertAge NO -maxResSize 256 -memLimit 1 -pinned YES
+
+add cache policy _nonGetReq -rule "!HTTP.REQ.METHOD.eq(GET)" -action NOCACHE
+
+add cache policy _advancedConditionalReq -rule "HTTP.REQ.HEADER(\"If-Match\").EXISTS || HTTP.REQ.HEADER(\"If-Unmodified-Since\").EXISTS" -action NOCACHE
+
+add cache policy _personalizedReq -rule "HTTP.REQ.HEADER(\"Cookie\").EXISTS || HTTP.REQ.HEADER(\"Authorization\").EXISTS || HTTP.REQ.HEADER(\"Proxy-Authorization\").EXISTS || HTTP.REQ.IS_NTLM_OR_NEGOTIATE" -action MAY_NOCACHE
+
+add cache policy _uncacheableStatusRes -rule "! ((HTTP.RES.STATUS.EQ(200)) || (HTTP.RES.STATUS.EQ(304)) || (HTTP.RES.STATUS.BETWEEN(400,499)) || (HTTP.RES.STATUS.BETWEEN(300, 302)) || (HTTP.RES.STATUS.EQ(307))|| (HTTP.RES.STATUS.EQ(203)))" -action NOCACHE
+
+add cache policy _uncacheableCacheControlRes -rule "((HTTP.RES.CACHE_CONTROL.IS_PRIVATE) || (HTTP.RES.CACHE_CONTROL.IS_NO_CACHE) || (HTTP.RES.CACHE_CONTROL.IS_NO_STORE) || (HTTP.RES.CACHE_CONTROL.IS_INVALID))" -action NOCACHE
+
+add cache policy _cacheableCacheControlRes -rule "((HTTP.RES.CACHE_CONTROL.IS_PUBLIC) || (HTTP.RES.CACHE_CONTROL.IS_MAX_AGE) || (HTTP.RES.CACHE_CONTROL.IS_MUST_REVALIDATE) || (HTTP.RES.CACHE_CONTROL.IS_PROXY_REVALIDATE) || (HTTP.RES.CACHE_CONTROL.IS_S_MAXAGE))" -action CACHE -storeInGroup DEFAULT
+
+add cache policy _uncacheableVaryRes -rule "((HTTP.RES.HEADER(\"Vary\").EXISTS) && ((HTTP.RES.HEADER(\"Vary\").INSTANCE(1).LENGTH > 0) || (!HTTP.RES.HEADER(\"Vary\").STRIP_END_WS.SET_TEXT_MODE(IGNORECASE).eq(\"Accept-Encoding\"))))" -action NOCACHE
+
+add cache policy _uncacheablePragmaRes -rule "HTTP.RES.HEADER(\"Pragma\").EXISTS" -action NOCACHE
+
+add cache policy _cacheableExpiryRes -rule "HTTP.RES.HEADER(\"Expires\").EXISTS" -action CACHE -storeInGroup DEFAULT
+
+add cache policy _imageRes -rule "HTTP.RES.HEADER(\"Content-Type\").SET_TEXT_MODE(IGNORECASE).STARTSWITH(\"image/\")" -action CACHE -storeInGroup DEFAULT
+
+add cache policy _personalizedRes -rule "HTTP.RES.HEADER(\"Set-Cookie\").EXISTS || HTTP.RES.HEADER(\"Set-Cookie2\").EXISTS" -action NOCACHE
+
+add cache policylabel _reqBuiltinDefaults -evaluates REQ
+
+add cache policylabel _resBuiltinDefaults -evaluates RES
+
+bind cache policylabel _reqBuiltinDefaults -policyName _nonGetReq -priority 100 -gotoPriorityExpression END
+
+bind cache policylabel _reqBuiltinDefaults -policyName _advancedConditionalReq -priority 200 -gotoPriorityExpression END
+
+bind cache policylabel _reqBuiltinDefaults -policyName _personalizedReq -priority 300 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _uncacheableStatusRes -priority 100 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _uncacheableVaryRes -priority 200 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _uncacheableCacheControlRes -priority 300 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _cacheableCacheControlRes -priority 400 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _uncacheablePragmaRes -priority 500 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _cacheableExpiryRes -priority 600 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _imageRes -priority 700 -gotoPriorityExpression END
+
+bind cache policylabel _resBuiltinDefaults -policyName _personalizedRes -priority 800 -gotoPriorityExpression END
+
+bind cache global NOPOLICY -priority 185883 -gotoPriorityExpression USE_INVOCATION_RESULT -type REQ_DEFAULT -invoke policylabel _reqBuiltinDefaults
+
+bind cache global NOPOLICY -priority 185883 -gotoPriorityExpression USE_INVOCATION_RESULT -type RES_DEFAULT -invoke policylabel _resBuiltinDefaults
+
+bind lb vserver vip1 svc1
+
+set ns diameter -identity netscaler.com -realm com
+
+set dns parameter -dns64Timeout 1000
+
+add dns nsRec . m.root-servers.net -TTL 3600000
+
+set lb monitor ldns-dns LDNS-DNS -query . -queryType Address
+
+bind serviceGroup svc1 4.4.4.101 80
+
+add route 0.0.0.0 0.0.0.0 172.31.208.1
+
+add route 3.3.3.0 255.255.255.0 4.4.4.254
+
+set ssl service nshttps-::1l-443 -eRSA ENABLED -sessReuse DISABLED -tls11 DISABLED -tls12 DISABLED
+
+set ssl service nsrpcs-::1l-3008 -eRSA ENABLED -sessReuse DISABLED -tls11 DISABLED -tls12 DISABLED
+
+set ssl service nskrpcs-127.0.0.1-3009 -eRSA ENABLED -sessReuse DISABLED -tls11 DISABLED -tls12 DISABLED
+
+set ssl service nshttps-127.0.0.1-443 -eRSA ENABLED -sessReuse DISABLED -tls11 DISABLED -tls12 DISABLED
+
+set ssl service nsrpcs-127.0.0.1-3008 -eRSA ENABLED -sessReuse DISABLED -tls11 DISABLED -tls12 DISABLED
+
+set vpn parameter -forceCleanup none -clientOptions all -clientConfiguration all
+
+bind ssl service nshttps-::1l-443 -certkeyName ns-server-certificate
+
+bind ssl service nsrpcs-::1l-3008 -certkeyName ns-server-certificate
+
+bind ssl service nskrpcs-127.0.0.1-3009 -certkeyName ns-server-certificate
+
+bind ssl service nshttps-127.0.0.1-443 -certkeyName ns-server-certificate
+
+bind ssl service nsrpcs-127.0.0.1-3008 -certkeyName ns-server-certificate
+
+set L3Param -icmpErrGenerate DISABLED
+
+set ns encryptionParams -method AES256 -keyValue ff0e316156e61a16f28261d20fca9b8d0450b07a858e4b6141fcd3598f12230a96cf921643da1131a550eb4bf6152aa446f712b8 -encrypted
+
+set inatparam -nat46v6Prefix ::/96
+
+add appfw JSONContentType "^application/json$" -isRegex REGEX
+
+add appfw XMLContentType ".*/xml" -isRegex REGEX
+
+add appfw XMLContentType ".*/.*\\+xml" -isRegex REGEX
+
+add appfw XMLContentType ".*/xml-.*" -isRegex REGEX
+
+set ip6TunnelParam -srcIP ::
+
+set ptp -state ENABLE
+
+ Done
+
+>

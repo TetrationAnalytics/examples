@@ -1,0 +1,97 @@
+ltm default-node-monitor {
+    rule none
+}
+ltm node /Common/webServer1 {
+    address 192.168.20.50
+    monitor /Common/icmp
+}
+ltm node /Common/webServer2 {
+    address 192.168.20.51
+    monitor /Common/icmp
+}
+ltm node /Common/webServer3 {
+    address 192.168.20.52
+    monitor /Common/icmp
+}
+ltm node /Common/webServer4 {
+    address 192.168.20.53
+    monitor /Common/icmp
+}
+ltm pool /Common/webPool1 {
+    members {
+        /Common/webServer1:80 {
+            address 192.168.20.50
+        }
+        /Common/webServer2:80 {
+            address 192.168.20.51
+        }
+    }
+    monitor /Common/http
+}
+ltm pool /Common/webPool2 {
+    members {
+        /Common/webServer3:80 {
+            address 192.168.20.52
+        }
+        /Common/webServer4:80 {
+            address 192.168.20.53
+        }
+    }
+    monitor /Common/http
+}
+ltm virtual /Common/webVirtualListener1 {
+    destination /Common/10.160.20.100:80
+    ip-protocol tcp
+    mask 255.255.255.255
+    pool /Common/webPool1
+    profiles {
+        /Common/http { }
+        /Common/tcp { }
+    }
+    source 0.0.0.0/0
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual /Common/webVirtualListener2 {
+    destination /Common/10.160.20.101:80
+    ip-protocol tcp
+    mask 255.255.255.255
+    pool /Common/webPool2
+    profiles {
+        /Common/http { }
+        /Common/tcp { }
+    }
+    source 0.0.0.0/0
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual-address /Common/10.160.20.100 {
+    address 10.160.20.100
+    arp enabled
+    icmp-echo enabled
+    mask 255.255.255.255
+    traffic-group /Common/traffic-group-1
+}
+ltm virtual-address /Common/10.160.20.101 {
+    address 10.160.20.101
+    arp enabled
+    icmp-echo enabled
+    mask 255.255.255.255
+    traffic-group /Common/traffic-group-1
+}
+net ipsec ike-daemon /Common/ikedaemon { }
+pem global-settings analytics { }
+security dos udp-portlist /Common/dos-udp-portlist {
+    entries {
+        entry1 {
+            match-direction both
+            port-number 53
+        }
+    }
+    list-type exclude-listed-ports
+}
+sys software update {
+    auto-check enabled
+    frequency weekly
+}
+wom endpoint-discovery { }
