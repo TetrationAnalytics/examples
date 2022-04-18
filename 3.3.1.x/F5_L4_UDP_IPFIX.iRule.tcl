@@ -13,28 +13,28 @@ when CLIENT_ACCEPTED {
   if { $static::http_rule1_tmplt == ""} {
     # if the template has not been created yet, create the template
     set static::http_rule1_tmplt [IPFIX::template create "flowStartMilliseconds \
-                                                          sourceIPv4Address \
-                                                          sourceIPv6Address  \
-                                                          destinationIPv4Address \
-                                                          destinationIPv6Address  \
-                                                          sourceTransportPort \
-                                                          destinationTransportPort \
-                                                          protocolIdentifier \
-                                                          octetTotalCount \
-                                                          packetTotalCount \
-                                                          octetDeltaCount \
-                                                          packetDeltaCount \
-                                                          postNATSourceIPv4Address \
-                                                          postNATSourceIPv6Address  \
-                                                          postNATDestinationIPv4Address \
-                                                          postNATDestinationIPv6Address  \
-                                                          postNAPTSourceTransportPort \
-                                                          postNAPTDestinationTransportPort \
-                                                          postOctetTotalCount \
-                                                          postPacketTotalCount \
-                                                          postOctetDeltaCount \
-                                                          postPacketDeltaCount \
-                                                          flowEndMilliseconds"]
+      sourceIPv4Address \
+      sourceIPv6Address  \
+      destinationIPv4Address \
+      destinationIPv6Address  \
+      sourceTransportPort \
+      destinationTransportPort \
+      protocolIdentifier \
+      octetTotalCount \
+      packetTotalCount \
+      octetDeltaCount \
+      packetDeltaCount \
+      postNATSourceIPv4Address \
+      postNATSourceIPv6Address  \
+      postNATDestinationIPv4Address \
+      postNATDestinationIPv6Address  \
+      postNAPTSourceTransportPort \
+      postNAPTDestinationTransportPort \
+      postOctetTotalCount \
+      postPacketTotalCount \
+      postOctetDeltaCount \
+      postPacketDeltaCount \
+      flowEndMilliseconds"]
   }
 }
 
@@ -45,7 +45,7 @@ when SERVER_CONNECTED {
   set server_closed_flag 0
   IPFIX::msg set $rule1_msg1 flowStartMilliseconds $start
   IPFIX::msg set $rule1_msg1 protocolIdentifier [IP::protocol]
-  
+
   # Clientside
   if { [clientside {IP::version}] equals "4" } {
     # Client IPv4 address
@@ -80,14 +80,14 @@ when SERVER_CONNECTED {
   # Server port
   IPFIX::msg set $rule1_msg1 postNAPTDestinationTransportPort [UDP::server_port]
 }
- 
+
 # SERVER_CLOSED event to collect IP pkts and bytes count on serverside
 when SERVER_CLOSED {
   set server_closed_flag 1
   # when flow is completed, BIG-IP to server REQUEST pkts and bytes count
   IPFIX::msg set $rule1_msg1 octetTotalCount [IP::stats bytes out]
   IPFIX::msg set $rule1_msg1 packetTotalCount [IP::stats pkts out]
-  # when flow is completed, server to BIG-IP RESPONSE pkts and bytes count 
+  # when flow is completed, server to BIG-IP RESPONSE pkts and bytes count
   IPFIX::msg set $rule1_msg1 octetDeltaCount [IP::stats bytes in]
   IPFIX::msg set $rule1_msg1 packetDeltaCount [IP::stats pkts in]
   if { $client_closed_flag == 1} {

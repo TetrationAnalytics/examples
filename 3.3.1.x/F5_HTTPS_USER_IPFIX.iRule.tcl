@@ -1,42 +1,52 @@
+when RULE_INIT {
+  set static::http_rule1_dest ""
+  set static::http_rule1_tmplt ""
+}
+
 when HTTP_REQUEST {
-   if { [HTTP::method] equals "GET" } {
+  if { [HTTP::method] equals "GET" } {
     set username [ACCESS::session data get session.logon.last.username]
-    IPFIX::msg set $rule1_msg1 userName $username
-   # log local0. "User $username attempted login from [IP::client_addr]:[TCP::client_port]"
-   }
+    if { $username != ""} {
+      IPFIX::msg set $rule1_msg1 userName $username
+    }
+  }
 }
 
 # CLIENT_ACCEPTED event to initiate IPFIX destination and template
 when CLIENT_ACCEPTED {
   set start [clock clicks -milliseconds]
-  # open the logging destination if it has not been opened yet
-  set http_rule1_dest [IPFIX::destination open -publisher /Common/ipfix-pub-1]
-  # if the template has not been created yet, create the template
-  set http_rule1_tmplt [IPFIX::template create "flowStartMilliseconds \
-                                                          sourceIPv4Address \
-                                                          sourceIPv6Address  \
-                                                          destinationIPv4Address \
-                                                          destinationIPv6Address  \
-                                                          sourceTransportPort \
-                                                          destinationTransportPort \
-                                                          protocolIdentifier \
-                                                          octetTotalCount \
-                                                          packetTotalCount \
-                                                          octetDeltaCount \
-                                                          packetDeltaCount \
-                                                          postNATSourceIPv4Address \
-                                                          postNATSourceIPv6Address  \
-                                                          postNATDestinationIPv4Address \
-                                                          postNATDestinationIPv6Address  \
-                                                          postNAPTSourceTransportPort \
-                                                          postNAPTDestinationTransportPort \
-                                                          postOctetTotalCount \
-                                                          postPacketTotalCount \
-                                                          postOctetDeltaCount \
-                                                          postPacketDeltaCount \
-                                                          flowEndMilliseconds \
-                                                          userName"]
-  set rule1_msg1 [IPFIX::msg create $http_rule1_tmplt]
+  if { $static::http_rule1_dest == ""} {
+    # open the logging destination if it has not been opened yet
+    set static::http_rule1_dest [IPFIX::destination open -publisher /Common/ipfix-pub-1]
+  }
+  if { $static::http_rule1_tmplt == ""} {
+    # if the template has not been created yet, create the template
+    set static::http_rule1_tmplt [IPFIX::template create "flowStartMilliseconds \
+      sourceIPv4Address \
+      sourceIPv6Address  \
+      destinationIPv4Address \
+      destinationIPv6Address  \
+      sourceTransportPort \
+      destinationTransportPort \
+      protocolIdentifier \
+      octetTotalCount \
+      packetTotalCount \
+      octetDeltaCount \
+      packetDeltaCount \
+      postNATSourceIPv4Address \
+      postNATSourceIPv6Address  \
+      postNATDestinationIPv4Address \
+      postNATDestinationIPv6Address  \
+      postNAPTSourceTransportPort \
+      postNAPTDestinationTransportPort \
+      postOctetTotalCount \
+      postPacketTotalCount \
+      postOctetDeltaCount \
+      postPacketDeltaCount \
+      flowEndMilliseconds \
+      userName"]
+  }
+  set rule1_msg1 [IPFIX::msg create $static::http_rule1_tmplt]
 }
 
 # SERVER_CONNECTED event to initiate flow data to Tetration and populate 5 tuples
@@ -45,7 +55,7 @@ when SERVER_CONNECTED {
   set server_closed_flag 0
   IPFIX::msg set $rule1_msg1 flowStartMilliseconds $start
   IPFIX::msg set $rule1_msg1 protocolIdentifier [IP::protocol]
-  
+
   # Clientside
   if { [clientside {IP::version}] equals "4" } {
     # Client IPv4 address
@@ -80,17 +90,17 @@ when SERVER_CONNECTED {
   # Server port
   IPFIX::msg set $rule1_msg1 postNAPTDestinationTransportPort [TCP::server_port]
 }
- 
+
 # SERVER_CLOSED event to collect IP pkts and bytes count on serverside
 when SERVER_CLOSED {
   set server_closed_flag 1
   # when flow is completed, BIG-IP to server REQUEST pkts and bytes count
   IPFIX::msg set $rule1_msg1 octetTotalCount [IP::stats bytes out]
   IPFIX::msg set $rule1_msg1 packetTotalCount [IP::stats pkts out]
-  # when flow is completed, server to BIG-IP RESPONSE pkts and bytes count 
+  # when flow is completed, server to BIG-IP RESPONSE pkts and bytes count
   IPFIX::msg set $rule1_msg1 octetDeltaCount [IP::stats bytes in]
   IPFIX::msg set $rule1_msg1 packetDeltaCount [IP::stats pkts in]
-    IPFIX::destination send $http_rule1_dest $rule1_msg1
+  IPFIX::destination send $static::http_rule1_dest $rule1_msg1
 }
 
 # CLIENT_CLOSED event to collect IP pkts and bytes count on clientside
@@ -104,6 +114,6 @@ when CLIENT_CLOSED {
   IPFIX::msg set $rule1_msg1 postPacketDeltaCount [IP::stats pkts out]
   # record the client closed time in ms
   IPFIX::msg set $rule1_msg1 flowEndMilliseconds [clock click -milliseconds]
-    # send the IPFIX log
-    IPFIX::destination send $http_rule1_dest $rule1_msg1
+  # send the IPFIX log
+  IPFIX::destination send $static::http_rule1_dest $rule1_msg1
 }
